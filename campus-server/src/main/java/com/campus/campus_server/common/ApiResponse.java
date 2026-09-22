@@ -19,6 +19,9 @@ public class ApiResponse<T> {
         return new ApiResponse<>(400, message, null);
     }
 
+    public static <T> ApiResponse<T> error(int code, String message) {
+        return new ApiResponse<>(code, message, null);
+    }
 
 
     public int getCode() {

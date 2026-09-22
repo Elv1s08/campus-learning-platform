@@ -9,6 +9,7 @@ import com.campus.campus_server.dto.LoginRequest;
 import com.campus.campus_server.entity.SysUser;
 import java.util.List;
 import com.campus.campus_server.common.ApiResponse;
+import com.campus.campus_server.util.JwtUtil;
 
 @RestController
 @RequestMapping("/api/users")
@@ -16,11 +17,14 @@ public class SysUserController {
 
     private final SysUserService sysUserService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     public SysUserController(SysUserService sysUserService,
-                             PasswordEncoder passwordEncoder) {
+                             PasswordEncoder passwordEncoder,
+                             JwtUtil jwtUtil) {
         this.sysUserService = sysUserService;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     @GetMapping
@@ -28,7 +32,7 @@ public class SysUserController {
         return ApiResponse.success(sysUserService.list());
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ApiResponse<Boolean> add(
             @Valid @RequestBody RegisterRequest request) {
 
@@ -86,6 +90,19 @@ public class SysUserController {
         return ApiResponse.success(sysUserService.removeById(id));
     }
 
+    @GetMapping("/me")
+    public ApiResponse<SysUser> getCurrentUser(
+            @RequestAttribute("userId") String userId) {
+
+        SysUser user = sysUserService.getById(Long.valueOf(userId));
+
+        if (user == null) {
+            return ApiResponse.error("用户不存在");
+        }
+
+        return ApiResponse.success(user);
+    }
+
 
     @PostMapping("/login")
     public ApiResponse<String> login(@Valid @RequestBody LoginRequest request) {
@@ -94,9 +111,9 @@ public class SysUserController {
                 .eq(SysUser::getStatus, 1)
                 .one();
 
-        if (user != null &&
-                passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ApiResponse.success("登录成功");
+        if (user != null && passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            String token = jwtUtil.generateToken(user);
+            return ApiResponse.success(token);
         }
 
         return ApiResponse.error("用户名或密码错误");
