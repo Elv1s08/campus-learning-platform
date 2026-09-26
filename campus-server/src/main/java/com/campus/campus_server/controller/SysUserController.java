@@ -10,6 +10,7 @@ import com.campus.campus_server.entity.SysUser;
 import java.util.List;
 import com.campus.campus_server.common.ApiResponse;
 import com.campus.campus_server.util.JwtUtil;
+import com.campus.campus_server.dto.UpdateProfileRequest;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,7 +29,13 @@ public class SysUserController {
     }
 
     @GetMapping
-    public ApiResponse<List<SysUser>> list() {
+    public ApiResponse<List<SysUser>> list(
+            @RequestAttribute("role") String role) {
+
+        if (!"ADMIN".equals(role)) {
+            return ApiResponse.error(403, "没有管理员权限");
+        }
+
         return ApiResponse.success(sysUserService.list());
     }
 
@@ -55,7 +62,14 @@ public class SysUserController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<SysUser> getById(@PathVariable Long id) {
+    public ApiResponse<SysUser> getById(
+            @PathVariable Long id,
+            @RequestAttribute("role") String role) {
+
+        if (!"ADMIN".equals(role)) {
+            return ApiResponse.error(403, "没有管理员权限");
+        }
+
         SysUser user = sysUserService.getById(id);
 
         if (user == null) {
@@ -66,8 +80,15 @@ public class SysUserController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Boolean> update(@PathVariable Long id,
-                                       @RequestBody SysUser user) {
+    public ApiResponse<Boolean> update(
+            @PathVariable Long id,
+            @RequestBody SysUser user,
+            @RequestAttribute("role") String role) {
+
+        if (!"ADMIN".equals(role)) {
+            return ApiResponse.error(403, "没有管理员权限");
+        }
+
         if (sysUserService.getById(id) == null) {
             return ApiResponse.error("用户不存在");
         }
@@ -82,7 +103,14 @@ public class SysUserController {
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Boolean> delete(@PathVariable Long id) {
+    public ApiResponse<Boolean> delete(
+            @PathVariable Long id,
+            @RequestAttribute("role") String role) {
+
+        if (!"ADMIN".equals(role)) {
+            return ApiResponse.error(403, "没有管理员权限");
+        }
+
         if (sysUserService.getById(id) == null) {
             return ApiResponse.error("用户不存在");
         }
@@ -117,6 +145,38 @@ public class SysUserController {
         }
 
         return ApiResponse.error("用户名或密码错误");
+    }
+
+    @PutMapping("/me")
+    public ApiResponse<Boolean> updateCurrentUser(
+            @RequestAttribute("userId") String userId,
+            @Valid @RequestBody UpdateProfileRequest request) {
+
+        if (request.getRealName() == null &&
+                request.getPassword() == null) {
+            return ApiResponse.error("没有需要修改的内容");
+        }
+
+        Long id = Long.valueOf(userId);
+
+        if (sysUserService.getById(id) == null) {
+            return ApiResponse.error("用户不存在");
+        }
+
+        SysUser user = new SysUser();
+        user.setId(id);
+
+        if (request.getRealName() != null) {
+            user.setRealName(request.getRealName());
+        }
+
+        if (request.getPassword() != null) {
+            user.setPassword(
+                    passwordEncoder.encode(request.getPassword())
+            );
+        }
+
+        return ApiResponse.success(sysUserService.updateById(user));
     }
 
 }
