@@ -20,6 +20,7 @@ public class SysUserController {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
+    // Spring 通过构造器注入这三个 Bean，并将引用保存到成员变量
     public SysUserController(SysUserService sysUserService,
                              PasswordEncoder passwordEncoder,
                              JwtUtil jwtUtil) {
@@ -97,6 +98,8 @@ public class SysUserController {
 
         if (user.getPassword() != null && !user.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }else{
+            user.setPassword(null);
         }
 
         return ApiResponse.success(sysUserService.updateById(user));

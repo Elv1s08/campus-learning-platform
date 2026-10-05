@@ -31,3 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
+### 上传的课程资料 ###
+/uploads/

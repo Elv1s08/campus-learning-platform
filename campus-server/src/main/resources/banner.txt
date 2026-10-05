@@ -1,0 +1,10 @@
+${AnsiColor.BRIGHT_YELLOW}
+ _|_|_|_|  _|      _|      _|  _|_|_|    _|_|_|
+_|        _|      _|      _|    _|    _|
+_|_|_|    _|      _|      _|    _|      _|_|
+_|        _|        _|  _|      _|          _|
+_|_|_|_|  _|_|_|_|    _|      _|_|_|  _|_|_|
+
+${AnsiColor.DEFAULT}
+:: Elvis Boot ::${AnsiColor.WHITE}             (v${application.version})
+${AnsiColor.BRIGHT_CYAN}  Spring Boot ${spring-boot.version}${AnsiColor.DEFAULT}
